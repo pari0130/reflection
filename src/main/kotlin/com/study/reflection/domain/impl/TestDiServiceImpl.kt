@@ -30,11 +30,12 @@ class TestDiServiceImpl : TestDiService {
                     .anyMatch { v -> v.equals(version) }
             }
             .findAny()
-            .orElse(applicationContext.getBean("TestServiceV1", TestService::class.java))
+            .orElse(applicationContext.getBean("TestServiceV1Impl", TestService::class.java))
     }
 
     override fun invokeServiceFun(so: String, actionItem: String, param: Map<*, *>): Any? {
         if (so.isNullOrEmpty() || actionItem.isNullOrEmpty()) {
+            logger.info("[DI LOG] invoke func so or actionItem is Empty -> { so : $so, actionItem : $actionItem }")
             return null
         }
         applicationContext.getBeanProvider(TestSpecificFunService::class.java).stream()
