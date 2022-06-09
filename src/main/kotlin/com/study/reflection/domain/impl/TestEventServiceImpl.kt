@@ -1,6 +1,7 @@
 package com.study.reflection.domain.impl
 
 import com.study.reflection.common.EventCode
+import com.study.reflection.common.ServiceVersion
 import com.study.reflection.domain.TestEventService
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
