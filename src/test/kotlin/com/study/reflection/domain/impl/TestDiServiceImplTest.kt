@@ -1,23 +1,25 @@
 package com.study.reflection.domain.impl
 
 import com.study.reflection.ReflectionApplication
+import com.study.reflection.common.SpecificActionItem
 import com.study.reflection.domain.TestDiService
 import com.study.reflection.domain.TestEventService
+import com.study.reflection.domain.TestSpecificFunService
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertAll
 import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
-
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import java.util.concurrent.TimeUnit
-import kotlin.math.log
+import org.springframework.context.ApplicationContext
+import org.springframework.util.ObjectUtils
 import kotlin.system.measureNanoTime
-import kotlin.system.measureTimeMillis
 
 @SpringBootTest(classes = arrayOf(ReflectionApplication::class))
 internal class TestDiServiceImplTest @Autowired constructor(
     private val testDiService : TestDiService,
-    private val testEventService: TestEventService
+    private val testEventService: TestEventService,
+    private val applicationContext: ApplicationContext
 ) {
 
     private val logger = LoggerFactory.getLogger(this::class.java)
@@ -35,9 +37,11 @@ internal class TestDiServiceImplTest @Autowired constructor(
 
         logger.info("[TEST] item -> { $itemV1, $itemV11, $itemV12 }")
 
-        Assertions.assertEquals(itemV1["item"], "v1 item test")
-        Assertions.assertEquals(itemV11["item"], "v1.1 item test")
-        Assertions.assertEquals(itemV12["item"], "v1.2 item test")
+        assertAll(
+            { Assertions.assertEquals(itemV1["item"], "v1 item test") },
+            { Assertions.assertEquals(itemV11["item"], "v1.1 item test") },
+            { Assertions.assertEquals(itemV12["item"], "v1.2 item test") }
+        )
     }
 
     @Test
@@ -103,5 +107,28 @@ internal class TestDiServiceImplTest @Autowired constructor(
 
         // 1회 시간 -> { reflectionTimeOne : 23958, directTimeOne : 5083 }
         logger.info("1회 시간 -> { reflectionTimeOne : $reflectionTimeOne, directTimeOne : $directTimeOne }")
+    }
+
+    @Test
+    fun loopTest(){
+        val list1 = 0..10
+        val list2 = 1..20
+        val list3 = 3..5
+        var runBreak = false
+
+        list3.let let1@ {
+            it.forEach list1@{ l1 ->
+                logger.info("it 1 -> $l1")
+                list2.forEach list2@{ l2 ->
+                    logger.info("it 2 -> $l2")
+                    if (l2 == 2) {
+                        logger.info("return -")
+                        runBreak = true
+                        return@let1
+                    }
+                }
+                if(runBreak) return@let1
+            }
+        }
     }
 }

@@ -38,44 +38,48 @@ class TestDiServiceImpl : TestDiService {
             logger.info("[DI LOG] invoke func so or actionItem is Empty -> { so : $so, actionItem : $actionItem }")
             return null
         }
+
+        var invokeResult: Any? = null
         applicationContext.getBeanProvider(TestSpecificFunService::class.java).stream()
-            .let { s ->
-                var invokeResult: Any? = null
-                s.forEach ExtraClass@{ extraClass ->
-                    extraClass.javaClass.declaredMethods.forEach ExtraMethod@{ method ->
-                        val extraMethod = method.getAnnotation(SpecificActionItem::class.java)
-                        if (!ObjectUtils.isEmpty(extraMethod)) {
-                            if (extraMethod.soIds.contains(so) && extraMethod.actionItem.contains(actionItem)) {
-                                invokeResult = extraClass.javaClass.getMethod(method.name, Map::class.java).invoke(extraClass, param)
-                                return@ExtraClass
-                            }
-                        } else {
-                            return@ExtraClass
+            .forEach extraClass@{ clazz ->
+                clazz.javaClass.declaredMethods.forEach extraMethod@{ method ->
+                    val extraMethod = method.getAnnotation(SpecificActionItem::class.java)
+                    if (!ObjectUtils.isEmpty(extraMethod)) {
+                        if (extraMethod.soIds.contains(so) && extraMethod.actionItem.contains(actionItem)) {
+                            invokeResult = clazz.javaClass.getMethod(method.name, Map::class.java).invoke(clazz, param)
+                            return@extraClass
                         }
+                    } else {
+                        return@extraClass
                     }
                 }
-                return invokeResult
             }
+
+        return invokeResult
     }
 
     override fun invokeEventFun(eventCode: Int, param: Map<*, *>): Any? {
+        if (param.isEmpty()) {
+            logger.info("[DI LOG] invoke func param is Empty -> { eventCode : $eventCode, param : $param }")
+            return null
+        }
+
+        var invokeResult: Any? = null
         applicationContext.getBeanProvider(TestEventService::class.java).stream()
-            .let { s ->
-                var invokeResult: Any? = null
-                s.forEach ExtraClass@{ extraClass ->
-                    extraClass.javaClass.declaredMethods.forEach ExtraMethod@{ method ->
-                        val extraMethod = method.getAnnotation(EventCode::class.java)
-                        if (!ObjectUtils.isEmpty(extraMethod)) {
-                            if (extraMethod.values.contains(eventCode)) {
-                                invokeResult = extraClass.javaClass.getMethod(method.name, Map::class.java).invoke(extraClass, param)
-                                return@ExtraClass
-                            }
-                        } else {
-                            return@ExtraClass
+            .forEach eventClass@{ clazz ->
+                clazz.javaClass.declaredMethods.forEach eventMethod@{ method ->
+                    val extraMethod = method.getAnnotation(EventCode::class.java)
+                    if (!ObjectUtils.isEmpty(extraMethod)) {
+                        if (extraMethod.values.contains(eventCode)) {
+                            invokeResult = clazz.javaClass.getMethod(method.name, Map::class.java).invoke(clazz, param)
+                            return@eventClass
                         }
+                    } else {
+                        return@eventClass
                     }
                 }
-                return invokeResult
             }
+
+        return invokeResult
     }
 }
